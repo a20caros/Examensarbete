@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name     Angular
+// @name     Angular-new
 // @version  1
 // @grant    none
 // @run-at 	 document-idle
@@ -10,12 +10,15 @@
 //Keeps track of which index it is on to click on the same products each time
 //localStorage.setItem('indexNow', 0);
 let indexNow = localStorage.getItem('indexNow') || 0;
-const maximumIndex = 301;
+const maximumIndex = 20000;
+
 //If the index is greater than or equal to the maximum index, it becomes 0, so it starts over
 if (indexNow >= maximumIndex) {
   indexNow = 0;
 }
 
+let addedProductsToCart = 0;
+var firstClickedProduct = false;
 //Is a mouseevent that simulates a click event on an html element
 var clickEvent = new MouseEvent('click', {
    view: window,
@@ -25,66 +28,91 @@ var clickEvent = new MouseEvent('click', {
 
 //A function that makes the hole process
 function functionality(){
-  //Pluses on indexNow so it gets to the next index next turn
-  indexNow++;
+
   //Set the indexNow to localstorage
   localStorage.setItem('indexNow', indexNow);
   //Get the produkts from localstorage
-	const myObject = JSON.parse(localStorage.getItem('myProducts'));
+	const myObject = JSON.parse(localStorage.getItem('WomenProducts'));
   //Get the index array from localstorage
-  const indexArray = JSON.parse(localStorage.getItem('productsIndexArrayssss'));
-  indexNow = parseInt(indexNow);
-  //Extracts the index from the index array and the product it belongs to and assigns it to the element variable
-  const indexProduct = indexArray[indexNow];
-  const element = myObject[indexProduct];
-
-  //Get the produkt (elements) id
-  const id = element.id;
-  //Get the produkt (elements) name
-  var addedProductName = element.name;
-
-  //Check if addedproduct already is in localstorage
-  if (!localStorage.getItem('addedProducts')) {
-    	//If not the array is created
-    	var addedProducts = [];
-    	//The added products pushes to the array
-    	addedProducts.push(addedProductName);
-    	//Set it in localstorage
-    	localStorage.setItem('addedProducts', JSON.stringify(addedProducts));
-  } else {
-    	//Get the addedproducts array
-    	var addedProducts = JSON.parse(localStorage.getItem('addedProducts'));
-    	//Push new addedproducts name 	
-    	addedProducts.push(addedProductName);
-    	//set it in localstorage
-    	localStorage.setItem('addedProducts', JSON.stringify(addedProducts));
+  const indexArray = JSON.parse(localStorage.getItem('Arrayssssssssssss'));
+  
+  let numberClicks = 20;
+  //sets the value of the endInd variable to indexNow + as many times as you want.
+  let endInd = parseInt(indexNow) + numberClicks;
+  //If this value exceeds maximumIndex, the code sets endInd to maximumIndex to avoid trying to process indexes outside the range.
+  if (endInd > maximumIndex) {
+    endInd = maximumIndex;
   }
+  
+  //Loops through as many times as you want times to add products to the cart
+  for (let i = parseInt(indexNow); i < endInd; i++) {
+    //Extracts the index from the index array and the product it belongs to and assigns it to the element variable
+    const indexProduct = indexArray[i];
+    const element = myObject[indexProduct];
 
 
-	//Wait sekunds and then click on the button
-  setTimeout(function() {
-  	const goToWomenPerfume = document.querySelector('#womenPerfumeSite');
-    goToWomenPerfume.click(); 
-   }, 2800);
+    //Get the produkt (elements) id
+    const id = element.id;
+    //Get the produkt (elements) name
+    var addedProductName = element.name;
+
+    //Check if addedproduct already is in localstorage
+    if (!localStorage.getItem('addedProducts')) {
+        //If not the array is created
+        var addedProducts = [];
+        //The added products pushes to the array
+        addedProducts.push(addedProductName);
+        //Set it in localstorage
+        localStorage.setItem('addedProducts', JSON.stringify(addedProducts));
+    } else {
+        //Get the addedproducts array
+        var addedProducts = JSON.parse(localStorage.getItem('addedProducts'));
+        //Push new addedproducts name 	
+        addedProducts.push(addedProductName);
+        //set it in localstorage
+        localStorage.setItem('addedProducts', JSON.stringify(addedProducts));
+    }
+
+    //Wait sekunds and then click on the button
+    setTimeout(function() {
+      const goToWomenPerfume = document.querySelector('#womenPerfumeSite');
+      goToWomenPerfume.click(); 
+     }, 2800);
 
    
-   setTimeout(function() {
-    //Take the data time now
-    const startTime= Date.now();
-    //Set the starttime 
-    window.localStorage.setItem("startTime", startTime); 
-    //Interact with the products width the same id thats comes from indexNow
-    const inputElement = document.getElementById(id);
-   	//Add value 1 in the input element so the product adds to the shopping cart page
-    inputElement.value = 1;
-    const event = new Event('input');
-    inputElement.dispatchEvent(event);
- 		//Click on the cart button to get to the shopping cart page
-     const goToCart = document.querySelector('#cartButton');
-     goToCart.click();  
-  }, 3000);
-
+     setTimeout(function() {
+         if (!firstClickedProduct) {
+          //Take the data time now
+          const startTime= Date.now();
+          window.localStorage.setItem("startTime", startTime);
+          // Update the variable when the first product is clicked to true
+          firstClickedProduct = true; 
+        }
+        //Interact with the products width the same id thats comes from indexNow
+        const inputElement = document.getElementById(id);
+        if (addedProductsToCart <= numberClicks) {
+        //Add value 1 in the input element so the product adds to the shopping cart page
+        inputElement.value = 1;
+        const event = new Event('input');
+        inputElement.dispatchEvent(event);
+        }
+        addedProductsToCart++;
+         //If maximum products have been added, click on the cart
+        if (addedProductsToCart === numberClicks) {
+          setTimeout(function() {
+            //Click on the cart button to get to the shopping cart page
+            const goToCart = document.querySelector('#cartButton');
+            goToCart.click(); 
+          }, 1000);
+        } 
+    }, 3000);
+  }
+   //Pluses on indexNow so it gets to the next index next turn
+  indexNow = endInd;
+  //Set the indexNow to localstorage
+  localStorage.setItem('indexNow', indexNow);
 }
+
 
 //A function that retrieves the start and stop time from local storage and calculates the time the measurement took
 function storeResultTime(){
@@ -117,14 +145,14 @@ function saveDataToFile() {
     }
   	//Creates the text file and its contents
     var textFile = new Blob([productNameString,'\n\n\nfinishTime:',timeResult], { type: "text/plain;charset=utf-8" });
-    saveAs(textFile, "ScriptResult.txt"); 
+    saveAs(textFile, "ScripttResult.txt"); 
 }
 
 // a variable that store seed
 let seedStore;
 
 // a variable that set the numbers of rounds
-var rounds = 10;
+var rounds = 1000;
 //Get the seed from localstorage
 var seedCountStr = window.localStorage.getItem("seedStore");
 seedStore = window.localStorage.getItem("seedStore");
@@ -145,7 +173,7 @@ if(seedCounter < rounds){
     		storeResultTime();
       	//Take the webbsite back to startpage
       	window.location.href = "http://localhost:4200";
-  	}, 3000);
+  	}, 5000);
 
 
 }else{
@@ -155,12 +183,11 @@ if(seedCounter < rounds){
 //If seedCounter is equal with number of rounds make the textfile and save the data. 
 if(seedCounter == rounds){
    saveDataToFile();
- 
   //This lines needs to run if you want to have a emty textfile
   /*finishTime = [];
-   localStorage.setItem('finishTime', JSON.stringify(finishTime)); 
+  localStorage.setItem('finishTime', JSON.stringify(finishTime)); 
    addedProducts = [];
-   localStorage.setItem('addedProducts', JSON.stringify(addedProducts));*/ 
+   localStorage.setItem('addedProducts', JSON.stringify(addedProducts));*/
    
    
 }
